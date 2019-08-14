@@ -51,16 +51,32 @@ struct Stack
     }
 
 };
-void Dds(int incidenceMatrix[MAX][MAX], int start, int end, int n, int h) {
-    Stack mo;
+void Dds(int incidenceMatrix[MAX][MAX], int start, int end, int n, int DS) {
+    int h = DS;
+    Stack sMo;
+    Queue qMo;
+    int l = 0; // level node
+    int level[n];
+    for (int i = 0; i < n; i++) {
+        level[i] = -1; //init all level node equal -1
+    }
+
     bool dong[n];
     for (int i = 0; i < n; i++) {
         dong[i] = false;
     }
-    mo.push(start);
+
+    sMo.push(start);
+    level[start] = l;
     dong[start] = true;
-    while (!mo.isEmpty()) {
-        int s = mo.pop();
+    while (!sMo.isEmpty() || !qMo.isEmpty()) {
+        int s = sMo.pop();
+        if (sMo.isEmpty()) {
+            s = qMo.dequeue();
+        }
+
+        l = level[s] + 1; //init s level child node 
+        
         cout << s << " -> ";
         if (s == end) {
             cout << "Has a path" << endl;
@@ -70,7 +86,19 @@ void Dds(int incidenceMatrix[MAX][MAX], int start, int end, int n, int h) {
         {
             if (incidenceMatrix[s][j] == 1 && dong[j] == false)
             {
-                mo.push(j);
+                if(level[s] >= 0 || level[s] <= DS - 1) {
+                    sMo.push(j);
+                } else if (level[s] == DS) {
+                    qMo.enqueue(j);
+                } else if (level[s] == DS + 1) {
+                    DS = DS + h;
+                    if (h == 1) {
+                        qMo.enqueue(j);
+                    } else {
+                        sMo.push(j);
+                    }
+                }
+                level[j] = l;
                 dong[j] = true;
             }
                 
@@ -91,15 +119,15 @@ int main() {
         cout << "Unable to open file"<< endl;
         exit(1); // terminate with error
     }
-    int n, h; // number of node in graph
+    int n, DS; // number of node in graph, level of node
     inFile >> n;
-    inFile >> h;
+    inFile >> DS;
     int a[MAX][MAX];
     for(int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             inFile >> a[i][j];
         }
     }
-    Dds(a, 0, 7, n, h); // fill the node: start, end 
+    Dds(a, 3, 7, n, DS); // fill the node: start, end 
     return 0;
 }
